@@ -1,6 +1,6 @@
 (defproject ellinia "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+  :description "A helper tool to develop Maple."
+  :url "https://github.com/MichaelDrogalis/ellinia"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :eval-in-leiningen true
