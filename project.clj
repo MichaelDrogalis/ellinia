@@ -4,6 +4,7 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :eval-in-leiningen true
-  :dependencies [[clj-webdriver "0.6.0-beta3"]
+  :dependencies [[org.clojure/clojure "1.5.0"]
+                 [clj-webdriver "0.6.0-beta3"]
                  [dire "0.2.1"]])
 
