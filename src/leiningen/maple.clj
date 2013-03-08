@@ -24,17 +24,25 @@
 (defn zip-images! [entity]
   (apply sh (zip entity)))
 
-(defn download-sprites! [entity]
+(defn stylesheet [entity]
+  (str "resources/public/stylesheets/" entity))
+
+(defn create-css-contents! [css entity]
+  (spit (stylesheet entity) css))
+
+(defn download-sprites-and-css! [entity]
   (taxi/set-driver! {:browser :firefox} "http://spritegen.website-performance.org")
   (taxi/input-text "#class-prefix" (str entity "-"))
-  (taxi/select-option "#build-direction" {:value "horizontal"}))
-
-(download-sprites! "green-mushroom")
+  (taxi/select-option "#build-direction" {:value "horizontal"})
+  (taxi/input-text "#path" (str (System/getProperty "user.dir") "/all.zip"))
+  (taxi/submit ".submit")
+  (taxi/click ".download")
+  (create-css-contents! (.getText (:webelement (taxi/element "#result form div textarea"))) entity))
 
 (defn maple
   "Installs monsters and NPCs from Perion Corner into the Maple project."
   [project & [command entity id entity & args]]
   (download-images! entity id)
   (zip-images! entity)
-  (download-sprites! entity))
+  (download-sprites-and-css! entity))
 
