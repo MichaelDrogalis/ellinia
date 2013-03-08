@@ -41,7 +41,8 @@
   (taxi/input-text "#path" (str (System/getProperty "user.dir") "/all.zip"))
   (taxi/submit ".submit")
   (download-sprite-sheet! entity (.getAttribute (:webelement (taxi/element ".download")) "href"))
-  (create-css-contents! (.getText (:webelement (taxi/element "#result form div textarea"))) entity))
+  (create-css-contents! (.getText (:webelement (taxi/element "#result form div textarea"))) entity)
+  (taxi/close))
 
 (with-pre-hook! #'download-images!
   (fn [& _] (println "Fetching images from Perion Corner...")))
