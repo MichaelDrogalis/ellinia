@@ -1,6 +1,7 @@
 (ns leiningen.maple
   (:require [clojure.java.shell :refer [sh]]
-            [clj-webdriver.taxi :as taxi]))
+            [clj-webdriver.taxi :as taxi]
+            [dire.core :refer [with-pre-hook!]]))
 
 (defn resource-dir [entity]
   (str "resources/public/images/" entity))
@@ -13,7 +14,6 @@
   (vector (str "http://www.perioncorner.com/cache/images/Mob/" id ".img/")))
 
 (defn download-images! [entity id]
-  (println "Fetching the images from Perion Corner...")
   (apply sh (concat (wget entity) (mob id))))
 
 (defn all-images [dir]
@@ -23,22 +23,18 @@
   ["zip" "all.zip" "-r" (all-images (resource-dir entity))])
 
 (defn zip-images! [entity]
-  (println "Zipping the images for the Sprite Generator...")
   (apply sh (zip entity)))
 
 (defn stylesheet [entity]
   (str "resources/public/stylesheets/" entity ".css"))
 
 (defn create-css-contents! [css entity]
-  (println "Generating the CSS file...")
   (spit (stylesheet entity) css))
 
 (defn download-sprite-sheet! [entity link]
-  (println "Downloading the sprite sheet...")
   (apply sh ["curl" "-o" (str (resource-dir entity) "/character.png") link]))
 
 (defn download-sprites-and-css! [entity]
-  (println "Uploading the images to the Sprite Generator...")
   (taxi/set-driver! {:browser :firefox} "http://spritegen.website-performance.org")
   (taxi/input-text "#class-prefix" (str entity "-"))
   (taxi/select-option "#build-direction" {:value "horizontal"})
@@ -46,6 +42,21 @@
   (taxi/submit ".submit")
   (download-sprite-sheet! entity (.getAttribute (:webelement (taxi/element ".download")) "href"))
   (create-css-contents! (.getText (:webelement (taxi/element "#result form div textarea"))) entity))
+
+(with-pre-hook! #'download-images!
+  (fn [& _] (println "Fetching images from Perion Corner...")))
+
+(with-pre-hook! #'zip-images!
+  (fn [& _] (println "Zipping the images for the Sprite Generator...")))
+
+(with-pre-hook! #'create-css-contents!
+  (fn [& _] (println "Generating the CSS file...")))
+
+(with-pre-hook! #'download-sprite-sheet!
+  (fn [& _] (println "Downloading the sprite sheet...")))
+
+(with-pre-hook! #'download-sprites-and-css!
+  (fn [& _] (println "Uploading the images to the Sprite Generator...")))
 
 (defn maple
   "Installs monsters and NPCs from Perion Corner into the Maple project."
