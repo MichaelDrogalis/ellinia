@@ -1,6 +1,7 @@
 (ns leiningen.maple
   (:require [clojure.java.shell :refer [sh]]
             [clojure.string :as string]
+            [clojure.pprint :refer [pprint]]
             [clj-webdriver.taxi :as taxi]
             [dire.core :refer [with-pre-hook!]]))
 
@@ -45,8 +46,17 @@
   (create-css-contents! (.getText (:webelement (taxi/element "#result form div textarea"))) entity)
   (taxi/close))
 
-(defn clean-up-directory! []
-  (apply sh ["rm" "all.zip"]))
+(defn action-from-file-name [name]
+  (apply str (filter #(not (Character/isDigit %)) (first (partition-by (partial = \.) name)))))
+
+(defn entity-action [entity]
+  (set
+   (map action-from-file-name
+        (filter
+         #(and (not= "character.png" %) (not (nil? (re-matches #".*png" %1))))
+         (map
+          (fn [f] (apply str (last (partition-by (partial = \/) (.getName f)))))
+          (file-seq (clojure.java.io/file (resource-dir entity))))))))
 
 (defn clojure-file-name [entity]
   (string/replace entity "-" "_"))
@@ -57,29 +67,32 @@
 (defn create-clojurescript-file! [entity]
   (apply sh ["touch" (str "src/maplestory/client/monster/" (clojure-file-name entity) ".cljs")]))
 
-(with-pre-hook! #'download-images!
-  (fn [& _] (println "Fetching images from Perion Corner...")))
+(defn clean-up-directory! []
+  (apply sh ["rm" "all.zip"]))
 
-(with-pre-hook! #'zip-images!
-  (fn [& _] (println "Zipping the images for the Sprite Generator...")))
+ (with-pre-hook! #'download-images!
+   (fn [_ _] (println "Fetching images from Perion Corner...")))
+
+ (with-pre-hook! #'zip-images!
+   (fn [_] (println "Zipping the images for the Sprite Generator...")))
 
 (with-pre-hook! #'create-css-contents!
-  (fn [& _] (println "Generating the CSS file...")))
+  (fn [_ _] (println "Generating the CSS file...")))
 
 (with-pre-hook! #'download-sprite-sheet!
-  (fn [& _] (println "Downloading the sprite sheet...")))
+  (fn [_ _] (println "Downloading the sprite sheet...")))
 
 (with-pre-hook! #'download-sprites-and-css!
-  (fn [& _] (println "Uploading the images to the Sprite Generator...")))
+  (fn [_] (println "Uploading the images to the Sprite Generator...")))
 
 (with-pre-hook! #'create-clojure-file!
-  (fn [& _] (println "Creating the Clojure server file...")))
+  (fn [_] (println "Creating the Clojure server file...")))
 
 (with-pre-hook! #'create-clojurescript-file!
-  (fn [& _] (println "Creating the ClojureScript client file...")))
+  (fn [_] (println "Creating the ClojureScript client file...")))
 
 (with-pre-hook! #'clean-up-directory!
-  (fn [& args] (println "Cleaning up directories...")))
+  (fn [] (println "Cleaning up directories...")))
 
 (defn maple
   "Installs monsters and NPCs from Perion Corner into the Maple project."

@@ -6,5 +6,5 @@
   :eval-in-leiningen true
   :dependencies [[org.clojure/clojure "1.5.0"]
                  [clj-webdriver "0.6.0-beta3"]
-                 [dire "0.2.1"]])
+                 [dire "0.3.0"]])
 
